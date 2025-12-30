@@ -1,3 +1,13 @@
-// Placeholder for future enhancements (forms, analytics, etc.)
-console.log("LawCompass static site loaded");
+// Smooth scrolling (minimal and unobtrusive)
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+    link.addEventListener("click", function (e) {
+        const target = document.querySelector(this.getAttribute("href"));
+        if (!target) return;
 
+        e.preventDefault();
+        target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    });
+});
