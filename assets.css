@@ -34,3 +34,42 @@ a {
 .question {
   margin-bottom: 20px;
 }
+.test-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  color: #f5f5f5;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 25px;
+  background: #0b1c2d;
+}
+
+.timer {
+  font-weight: bold;
+  color: #d4af37;
+}
+
+.question {
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  margin: 5px 0;
+}
+
+.submit-btn {
+  padding: 12px 25px;
+  background: #d4af37;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
