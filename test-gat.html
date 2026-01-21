@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GAT Test | LawCompass</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="assets.css">
+</head>
+<body>
+
+<nav>
+  <h1>LawCompass</h1>
+</nav>
+
+<!-- Instructions & Access Gate -->
+<section class="instruction-box" id="instructions">
+  <h2>General Aptitude Test (GAT)</h2>
+
+  <ul>
+    <li>Each correct answer carries <strong>+5 marks</strong></li>
+    <li>Each incorrect answer carries <strong>−1 mark</strong></li>
+    <li>Unattempted questions carry <strong>0 marks</strong></li>
+    <li>Switching tabs will trigger a warning</li>
+    <li>Test auto-submits when time ends</li>
+  </ul>
+
+  <input type="text" id="nameInput" placeholder="Enter your full name">
+  <input type="password" id="passInput" placeholder="Enter 4-digit test code">
+
+  <button class="primary-btn" onclick="startTest()">Start Test</button>
+</section>
+
+<!-- Test Area -->
+<section id="testArea" class="hidden">
+  <div class="top-bar">
+    <span id="timer">Time Left:</span>
+  </div>
+
+  <div id="questions"></div>
+
+  <button class="primary-btn submit-btn" onclick="submitTest()">Submit Test</button>
+</section>
+
+<script src="js/gat-test.js"></script>
+</body>
+</html>
