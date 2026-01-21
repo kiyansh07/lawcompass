@@ -5,39 +5,40 @@
   <title>LawCompass | English Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSS -->
+  <!-- Styles -->
   <link rel="stylesheet" href="css/assets.css" />
 </head>
 
 <body>
 
-<nav class="navbar">
-  <div class="logo">LawCompass</div>
-  <div class="timer" id="timer">10:00</div>
-</nav>
+  <nav class="navbar">
+    <div class="logo">LawCompass</div>
+    <div class="timer" id="timer">10:00</div>
+  </nav>
 
-<main class="test-container">
+  <main class="test-container">
 
-  <h1>English Vocabulary Test</h1>
-  <p class="instructions">
-    Total Questions: 20 | Time: 10 Minutes<br>
-    +5 for correct | −1 for wrong | 0 for unattempted
-  </p>
+    <h1>English Vocabulary Test</h1>
 
-  <form id="testForm">
-    <div id="questions"></div>
+    <p class="instructions">
+      20 Questions · Time: 10 Minutes<br>
+      +5 Correct · −1 Wrong · 0 Unattempted
+    </p>
 
-    <button type="submit" class="submit-btn">
-      Submit Test
-    </button>
-  </form>
+    <form id="testForm">
+      <div id="questions"></div>
 
-  <section id="resultSection" class="hidden"></section>
+      <button type="submit" class="submit-btn">
+        Submit Test
+      </button>
+    </form>
 
-</main>
+    <section id="resultSection" class="hidden"></section>
 
-<!-- JS -->
-<script src="js/english-test.js"></script>
+  </main>
+
+  <!-- JS (MUST be last) -->
+  <script src="js/english-test.js"></script>
 
 </body>
 </html>
