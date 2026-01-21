@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>English Test</title>
+  <link rel="stylesheet" href="assets.css">
+</head>
+<body>
+
+<div class="instruction-box" id="instructions">
+  <h2>Instructions</h2>
+  <ul>
+    <li>+5 for correct, −1 for wrong, 0 for unattempted</li>
+    <li>Do not switch tabs</li>
+    <li>Timer will auto-submit</li>
+  </ul>
+
+  <input id="nameInput" placeholder="Enter your name">
+  <input id="passInput" placeholder="4-digit test code">
+  <button onclick="startTest()">Start Test</button>
+</div>
+
+<div id="testArea" class="hidden">
+  <div class="top-bar">
+    <span id="timer"></span>
+  </div>
+
+  <div id="questions"></div>
+
+  <button onclick="submitTest()">Submit Test</button>
+</div>
+
+<script src="js/english-test.js"></script>
+</body>
+</html>
