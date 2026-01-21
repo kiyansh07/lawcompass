@@ -1,44 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>LawCompass | English Test</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Styles -->
-  <link rel="stylesheet" href="css/assets.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1c2d;
+      color: #f5f5f5;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 25px;
+      background: #081523;
+    }
+
+    .timer {
+      color: #d4af37;
+      font-weight: bold;
+    }
+
+    .test-container {
+      max-width: 900px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .question {
+      margin-bottom: 25px;
+    }
+
+    label {
+      display: block;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+
+    button {
+      padding: 12px 25px;
+      background: #d4af37;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #444;
+      padding: 8px;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body>
 
-  <nav class="navbar">
-    <div class="logo">LawCompass</div>
+  <div class="navbar">
+    <div><strong>LawCompass</strong></div>
     <div class="timer" id="timer">10:00</div>
-  </nav>
+  </div>
 
-  <main class="test-container">
-
+  <div class="test-container">
     <h1>English Vocabulary Test</h1>
-
-    <p class="instructions">
-      20 Questions · Time: 10 Minutes<br>
-      +5 Correct · −1 Wrong · 0 Unattempted
-    </p>
+    <p>20 Questions | Time: 10 Minutes<br>+5 Correct | −1 Wrong | 0 Unattempted</p>
 
     <form id="testForm">
       <div id="questions"></div>
-
-      <button type="submit" class="submit-btn">
-        Submit Test
-      </button>
+      <button type="submit">Submit Test</button>
     </form>
 
-    <section id="resultSection" class="hidden"></section>
+    <div id="result"></div>
+  </div>
 
-  </main>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
 
-  <!-- JS (MUST be last) -->
-  <script src="js/english-test.js"></script>
+  const questions = [
+    ["An unintended consequence of an action, especially an unwelcome one.", ["Repercussion","Panegyric","Sanctuary","Gratification"], 0],
+    ["Easily persuaded to believe something; overly trusting.", ["Stoic","Gullible","Ostentatious","Obdurate"], 1],
+    ["Changing frequently, especially in loyalties or feelings.", ["Timid","Enervate","Fickle","Sterility"], 2],
+    ["To reduce in intensity, force, or severity.", ["Vanquish","Exalt","Glutton","Abate"], 3],
+    ["Using more words than necessary; excessively wordy.", ["Verbose","Evident","Sporadic","Servile"], 0],
+    ["The area covered by something.", ["Allegiate","Extent","Sanctum","Masque"], 1],
+    ["To feel or show triumphant joy or jubilation.", ["Enervate","Ostentatious","Exult","Abate"], 2],
+    ["Deserving or causing public disgrace or shame.", ["Sanctuary","Satiate","Timid","Ignominious"], 3],
+    ["Occurring at irregular intervals; scattered.", ["Sporadic","Stoic","Conspicuous","Panegyric"], 0],
+    ["Excessively showy; designed to attract notice.", ["Servile","Ostentatious","Evident","Sanctum"], 1],
+    ["Excessively eager to please or obey.", ["Vanquish","Sterility","Servile","Glutton"], 2],
+    ["Refusing to change one’s mind; stubborn.", ["Timid","Panegyric","Satiate","Obdurate"], 3],
+    ["Lacking in energy or vitality.", ["Enervate","Exalt","Conspicuous","Masque"], 0],
+    ["A private place from which most people are excluded.", ["Planetarium","Sanctum","Aquarium","Panegyric"], 1],
+    ["A public speech or text in praise of someone.", ["Evident","Timid","Panegyric","Sterility"], 2],
+    ["Make suffering, deficiency, or a problem less severe.", ["Vanquish","Satiate","Glutton","Alleviate"], 3],
+    ["Clearly visible or easily noticed.", ["Conspicuous","Stoic","Servile","Sporadic"], 0],
+    ["Showing a lack of courage or confidence.", ["Evident","Timid","Ostentatious","Exult"], 1],
+    ["Enduring pain or hardship without showing feelings.", ["Sterility","Sanctuary","Stoic","Verbose"], 2],
+    ["Defeat thoroughly or completely.", ["Glutton","Masque","Evident","Vanquish"], 3]
+  ];
+
+  const qDiv = document.getElementById("questions");
+
+  questions.forEach((q, i) => {
+    let html = `<div class="question"><strong>Q${i+1}. ${q[0]}</strong>`;
+    q[1].forEach((opt, j) => {
+      html += `<label><input type="radio" name="q${i}" value="${j}"> ${opt}</label>`;
+    });
+    html += `</div>`;
+    qDiv.innerHTML += html;
+  });
+
+  let time = 600;
+  const timer = document.getElementById("timer");
+  const interval = setInterval(() => {
+    let m = Math.floor(time/60);
+    let s = time%60;
+    timer.textContent = `${m}:${s<10?"0":""}${s}`;
+    time--;
+    if (time < 0) document.getElementById("testForm").requestSubmit();
+  }, 1000);
+
+  document.getElementById("testForm").onsubmit = function(e){
+    e.preventDefault();
+    clearInterval(interval);
+
+    let correct=0, wrong=0, un=0;
+    let table = `<table><tr><th>Q</th><th>Your</th><th>Correct</th><th>Status</th></tr>`;
+
+    questions.forEach((q,i)=>{
+      let sel = document.querySelector(`input[name="q${i}"]:checked`);
+      if(!sel){ un++; table+=`<tr><td>${i+1}</td><td>-</td><td>${q[1][q[2]]}</td><td>Unattempted</td></tr>`;}
+      else if(+sel.value===q[2]){ correct++; table+=`<tr><td>${i+1}</td><td>${q[1][q[2]]}</td><td>${q[1][q[2]]}</td><td>Correct</td></tr>`;}
+      else{ wrong++; table+=`<tr><td>${i+1}</td><td>${q[1][sel.value]}</td><td>${q[1][q[2]]}</td><td>Wrong</td></tr>`;}
+    });
+
+    table += `</table>`;
+    document.getElementById("result").innerHTML =
+      `<h2>Result</h2>
+       Correct: ${correct}<br>
+       Wrong: ${wrong}<br>
+       Unattempted: ${un}<br>
+       <strong>Total Marks: ${correct*5-wrong}</strong>
+       <h3>Analysis</h3>${table}`;
+  };
+
+});
+</script>
 
 </body>
 </html>
