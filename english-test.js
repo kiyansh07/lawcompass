@@ -1,31 +1,59 @@
-const TEST_PASSWORD = "1234"; // CHANGE THIS
-const TEST_DURATION = 1800;
+/* ==============================
+   CONFIGURATION (EDIT HERE)
+================================ */
+
+const SUBJECT = "English";
+const TEST_PASSWORD = "1234";   // CHANGE THIS PER TEST
+const TEST_DURATION = 1800;     // seconds (30 minutes)
+
+/* ==============================
+   QUESTIONS (EDIT FREELY)
+================================ */
 
 const QUESTIONS = [
   {
-    q: "Synonym of 'Lucid'?",
-    options: ["Clear", "Dark", "Complex", "Weak"],
+    q: "Choose the correct synonym of 'Lucid'.",
+    options: ["Clear", "Obscure", "Confusing", "Vague"],
     correct: 0
   },
   {
-    q: "Antonym of 'Benevolent'?",
-    options: ["Kind", "Cruel", "Gentle", "Soft"],
+    q: "Choose the correct antonym of 'Benevolent'.",
+    options: ["Kind", "Generous", "Cruel", "Compassionate"],
+    correct: 2
+  },
+  {
+    q: "Fill in the blank: He is ___ honest man.",
+    options: ["a", "an", "the", "no article"],
     correct: 1
   }
 ];
 
-let answers = {};
+/* ==============================
+   INTERNAL STATE
+================================ */
+
 let timeLeft = TEST_DURATION;
-let timer;
+let timerInterval;
+
+/* ==============================
+   START TEST
+================================ */
 
 function startTest() {
   const name = document.getElementById("nameInput").value.trim();
-  const pass = document.getElementById("passInput").value;
+  const pass = document.getElementById("passInput").value.trim();
 
-  if (!name || pass !== TEST_PASSWORD) {
-    alert("Invalid name or test code");
+  if (!name) {
+    alert("Please enter your name.");
     return;
   }
+
+  if (pass !== TEST_PASSWORD) {
+    alert("Invalid test code.");
+    return;
+  }
+
+  localStorage.setItem("currentUser", name);
 
   document.getElementById("instructions").style.display = "none";
   document.getElementById("testArea").classList.remove("hidden");
@@ -34,55 +62,110 @@ function startTest() {
   startTimer();
 }
 
+/* ==============================
+   RENDER QUESTIONS
+================================ */
+
 function renderQuestions() {
-  const qDiv = document.getElementById("questions");
-  QUESTIONS.forEach((q, i) => {
-    qDiv.innerHTML += `
-      <div class="question">
-        <p>${i + 1}. ${q.q}</p>
-        ${q.options.map((op, idx) =>
-          `<label><input type="radio" name="q${i}" value="${idx}"> ${op}</label>`
-        ).join("")}
-      </div>`;
+  const container = document.getElementById("questions");
+  container.innerHTML = "";
+
+  QUESTIONS.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "question";
+
+    div.innerHTML = `
+      <p><strong>Q${index + 1}.</strong> ${q.q}</p>
+      ${q.options.map((opt, i) => `
+        <label>
+          <input type="radio" name="q${index}" value="${i}">
+          ${opt}
+        </label><br>
+      `).join("")}
+    `;
+
+    container.appendChild(div);
   });
 }
 
+/* ==============================
+   TIMER
+================================ */
+
 function startTimer() {
-  timer = setInterval(() => {
+  updateTimer();
+  timerInterval = setInterval(() => {
     timeLeft--;
-    document.getElementById("timer").innerText = `Time Left: ${timeLeft}s`;
-    if (timeLeft <= 0) submitTest();
+    updateTimer();
+
+    if (timeLeft <= 0) {
+      submitTest();
+    }
   }, 1000);
 }
 
-function submitTest() {
-  clearInterval(timer);
-
-  let correct = 0, wrong = 0;
-
-  QUESTIONS.forEach((q, i) => {
-    const chosen = document.querySelector(`input[name="q${i}"]:checked`);
-    if (!chosen) return;
-    if (parseInt(chosen.value) === q.correct) correct++;
-    else wrong++;
-  });
-
-  const score = correct * 5 - wrong;
-  const timeTaken = TEST_DURATION - timeLeft;
-
-  saveResult(score, timeTaken);
+function updateTimer() {
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  document.getElementById("timer").innerText =
+    `Time Left: ${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
-function saveResult(score, time) {
-  const data = JSON.parse(localStorage.getItem("leaderboard") || "[]");
-  data.push({ score, time, subject: "English" });
-  localStorage.setItem("leaderboard", JSON.stringify(data));
+/* ==============================
+   SUBMIT & EVALUATE
+================================ */
+
+function submitTest() {
+  clearInterval(timerInterval);
+
+  let correct = 0;
+  let wrong = 0;
+
+  QUESTIONS.forEach((q, index) => {
+    const selected = document.querySelector(`input[name="q${index}"]:checked`);
+    if (!selected) return;
+
+    if (parseInt(selected.value) === q.correct) {
+      correct++;
+    } else {
+      wrong++;
+    }
+  });
+
+  const score = (correct * 5) - (wrong * 1);
+  const timeTaken = TEST_DURATION - timeLeft;
+  const name = localStorage.getItem("currentUser") || "Anonymous";
+
+  saveResult(name, score, timeTaken);
+}
+
+/* ==============================
+   SAVE TO LEADERBOARD
+================================ */
+
+function saveResult(name, score, time) {
+  const leaderboard =
+    JSON.parse(localStorage.getItem("leaderboard")) || [];
+
+  leaderboard.push({
+    name: name,
+    subject: SUBJECT,
+    score: score,
+    time: time
+  });
+
+  localStorage.setItem("leaderboard", JSON.stringify(leaderboard));
   window.location.href = "leaderboard.html";
 }
 
-// Anti-cheating
-document.addEventListener("visibilitychange", () => {
-  if (document.hidden) alert("Do not switch tabs during test!");
-});
-document.addEventListener("contextmenu", e => e.preventDefault());
+/* ==============================
+   BASIC ANTI-CHEAT
+================================ */
 
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    alert("Warning: Do not switch tabs during the test.");
+  }
+});
+
+document.addEventListener("contextmenu", e => e.preventDefault());
