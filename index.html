@@ -1,8 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>LawCompass</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
 <body>
 
-<!-- NEW NAVBAR -->
+<!-- ================= NAVBAR ================= -->
 <header class="navbar">
   <div class="logo">LawCompass</div>
+
   <nav>
     <a href="#">Home</a>
     <a href="#start-test">Start Test</a>
@@ -10,11 +22,14 @@
   </nav>
 </header>
 
-<!-- NEW HERO SECTION -->
+<!-- ================= HERO SECTION ================= -->
 <section class="hero">
   <div class="hero-left">
     <h1>Prepare for CUET Law</h1>
-    <p>Practice English & GAT tests with real competition.</p>
+    <p>
+      Practice English and General Test questions for CUET aspirants.
+      Compete with other students and climb the leaderboard.
+    </p>
 
     <div class="hero-buttons">
       <a href="#start-test" class="primary-btn">Start Test</a>
@@ -27,94 +42,73 @@
   </div>
 </section>
 
-<!-- YOUR EXISTING WEBSITE STARTS HERE -->
+<!-- ================= FEATURES ================= -->
+<section class="features">
+  <div class="feature-card">
+    <h3>Live Tests</h3>
+    <p>Attempt CUET-style tests with real competition.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Instant Ranking</h3>
+    <p>See your position on the leaderboard instantly.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Practice for Success</h3>
+    <p>Improve your English and GAT performance.</p>
+  </div>
+</section>
+
+<!-- ================= LEADERBOARD PREVIEW ================= -->
+<section class="leaderboard-preview" id="leaderboard">
+  <h2>Top Performers</h2>
+  <div id="topLeaderboard"></div>
+</section>
+
+<!-- ================= TEST PORTAL ================= -->
+<section id="start-test">
 <div class="container">
-<!-- LOGIN -->
-<section id="loginPage" class="page active">
-<div class="card login-card">
+
 <h2>Student Login</h2>
-<input id="name" placeholder="Full Name">
-<input id="studentId" placeholder="Student ID">
-<button onclick="login()">Enter Portal</button>
+
+<input type="text" id="studentName" placeholder="Enter Full Name">
+<input type="text" id="studentId" placeholder="Enter Student ID">
+
+<button onclick="loginStudent()">Continue</button>
+
+<div id="passwordSection" style="display:none;">
+  <h3>Enter Test Password</h3>
+  <input type="password" id="testPassword" placeholder="4-digit password">
+  <button onclick="verifyPassword()">Start Test</button>
+</div>
+
 </div>
 </section>
 
-<!-- INSTRUCTIONS -->
-<section id="instructionsPage" class="page">
-<div class="card">
-<h2>Exam Instructions</h2>
-<ul>
-<li>Test can be attempted only once</li>
-<li>Maximum 50 students allowed</li>
-<li>Timer will auto-submit test</li>
-<li>Do not refresh during exam</li>
-</ul>
-<button onclick="goToPassword()">Proceed</button>
-</div>
-</section>
+<!-- ================= QUIZ AREA ================= -->
+<div class="quiz-container" id="quizContainer" style="display:none;">
 
-<!-- PASSWORD -->
-<section id="passwordPage" class="page">
-<div class="card">
-<h2>Enter Test Password</h2>
-<input id="testPassword" placeholder="Password">
-<button onclick="verifyPassword()">Start Test</button>
-</div>
-</section>
+<h2 id="question"></h2>
 
-<!-- EXAM -->
-<section id="examPage" class="page container">
+<div id="options"></div>
 
-<div class="exam-grid">
-
-<div class="card question-panel">
-<div id="questionContainer"></div>
-
-<div class="nav-buttons">
-<button onclick="prevQuestion()">Previous</button>
-<button onclick="nextQuestion()">Next</button>
-<button class="submit-btn" onclick="submitTest()">Submit</button>
-</div>
+<button id="nextBtn" onclick="nextQuestion()">Next</button>
 
 </div>
 
-<div class="card navigator-panel">
-<h3>Questions</h3>
-<div id="navigator"></div>
+<!-- ================= RESULT ================= -->
+<div id="resultContainer" style="display:none;">
+<h2>Test Submitted Successfully</h2>
+<p>Your score has been recorded.</p>
 </div>
 
-</div>
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <p>LawCompass • CUET Preparation Platform</p>
+</footer>
 
-</section>
-
-<!-- RESULT DASHBOARD -->
-<section id="resultPage" class="page">
-<div class="card result-card">
-<h2>Test Completed</h2>
-<div id="scoreDisplay"></div>
-<div id="rankDisplay"></div>
-<div id="badge"></div>
-<button onclick="loadLeaderboard()">View Leaderboard</button>
-</div>
-</section>
-
-<!-- LEADERBOARD -->
-<section id="leaderboardPage" class="page container">
-<div class="card leaderboard-card">
-
-<h2>Leaderboard</h2>
-
-<div id="top10"></div>
-
-<div class="search-area">
-<input id="searchBox" placeholder="Search your name or ID">
-<button onclick="searchRank()">Search</button>
-</div>
-
-<div id="searchResult"></div>
-
-</div>
-</section>
+<!-- ================= SCRIPTS ================= -->
 
 <script type="module" src="firebase.js"></script>
 <script src="questions.js"></script>
