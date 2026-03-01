@@ -1,392 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LawCompass Exam Portal</title>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
-
-<style>
-:root{
---bg:#071426;
---card:#0e2345;
---gold:#d4af37;
---text:#ffffff;
-}
-
-body{
-margin:0;
-font-family:Georgia,serif;
-background:var(--bg);
-color:var(--text);
-}
-
-header{
-background:#040c19;
-border-bottom:2px solid var(--gold);
-padding:18px;
-text-align:center;
-}
-
-header h1{
-margin:0;
-color:var(--gold);
-}
-
-.container{
-max-width:1000px;
-margin:auto;
-padding:20px;
-}
-
-.card{
-background:var(--card);
-padding:20px;
-border-radius:12px;
-margin-top:20px;
-box-shadow:0 0 15px rgba(0,0,0,0.5);
-}
-
-input,button{
-width:100%;
-padding:12px;
-margin-top:10px;
-border-radius:8px;
-border:none;
-font-size:15px;
-}
-
-button{
-background:var(--gold);
-font-weight:bold;
-cursor:pointer;
-}
-
-.timer{
-text-align:right;
-color:var(--gold);
-font-size:18px;
-margin-bottom:10px;
-}
-
-.question{
-font-size:18px;
-margin-bottom:10px;
-}
-
-.option{
-background:#173565;
-padding:10px;
-margin:6px 0;
-border-radius:6px;
-cursor:pointer;
-}
-
-.option:hover{
-background:#1f4b90;
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-}
-
-th,td{
-padding:10px;
-border-bottom:1px solid #333;
-text-align:center;
-}
-
-.rank1{color:gold;font-weight:bold;}
-.rank2{color:silver;}
-.rank3{color:#cd7f32;}
-
-footer{
-text-align:center;
-padding:20px;
-margin-top:30px;
-background:#040c19;
-}
-</style>
+<title>LawCompass</title>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
 <h1>LawCompass</h1>
-<p>Mentorship • Testing • Excellence</p>
 </header>
 
-<div class="container">
-
 <!-- LOGIN -->
-<div class="card" id="login">
+<section id="loginPage">
 <h2>Student Login</h2>
-<input id="loginId" placeholder="Login ID (Example: LC101)">
-<input id="password" placeholder="Test Password">
-<button onclick="login()">Start Test</button>
-</div>
+<input type="text" id="name" placeholder="Full Name">
+<input type="text" id="studentId" placeholder="Student ID">
+<button onclick="login()">Continue</button>
+</section>
+
+<!-- INSTRUCTIONS -->
+<section id="instructionsPage" class="hidden">
+<h2>Test Instructions</h2>
+<ul>
+<li>Attempt only once</li>
+<li>50 students max</li>
+<li>Timer will auto submit</li>
+</ul>
+<button onclick="goToPassword()">Proceed</button>
+</section>
+
+<!-- PASSWORD -->
+<section id="passwordPage" class="hidden">
+<h2>Enter Test Password</h2>
+<input type="password" id="testPassword" placeholder="4 digit password">
+<button onclick="verifyPassword()">Start Test</button>
+</section>
 
 <!-- EXAM -->
-<div class="card" id="exam" style="display:none">
-<div class="timer">Time Left: <span id="time"></span></div>
-<div id="questionBox"></div>
+<section id="examPage" class="hidden">
+<div id="timer"></div>
+
+<div id="questionContainer"></div>
+
+<div id="navigator"></div>
+
+<button onclick="prevQuestion()">Previous</button>
 <button onclick="nextQuestion()">Next</button>
-</div>
+<button onclick="submitTest()">Submit Test</button>
+</section>
 
 <!-- RESULT -->
-<div class="card" id="result" style="display:none">
-<h2>Test Submitted</h2>
-<p>Name: <span id="studentName"></span></p>
-<p>Score: <span id="score"></span></p>
-<p>Your Rank: <span id="rank"></span></p>
-</div>
+<section id="resultPage" class="hidden">
+<h2>Your Result</h2>
+<div id="scoreDisplay"></div>
+<div id="rankDisplay"></div>
+<button onclick="loadLeaderboard()">View Leaderboard</button>
+</section>
 
 <!-- LEADERBOARD -->
-<div class="card">
+<section id="leaderboardPage" class="hidden">
 <h2>Leaderboard</h2>
-<table>
-<thead>
-<tr>
-<th>Rank</th>
-<th>Name</th>
-<th>Score</th>
-<th>Time</th>
-</tr>
-</thead>
-<tbody id="leaderboard"></tbody>
-</table>
-</div>
+<div id="top10"></div>
 
-</div>
+<input type="text" id="searchBox" placeholder="Search name or ID">
+<button onclick="searchRank()">Search</button>
 
-<footer>
-© 2026 LawCompass
-</footer>
+<div id="searchResult"></div>
+</section>
 
-<script>
-
-/* =========================
-   FIREBASE CONFIG
-   ========================= */
-
-const firebaseConfig = {
-  apiKey: "AIzaSyD_hDnbO9eAkl_uIbh7RlqyW8GwzrHFAv4",
-  authDomain: "lawcompass-9d20f.firebaseapp.com",
-  projectId: "lawcompass-9d20f",
-  storageBucket: "lawcompass-9d20f.firebasestorage.app",
-  messagingSenderId: "267483431074",
-  appId: "1:267483431074:web:571f34b478aaa976e6d7fb"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-/* =========================
-   TEST SETTINGS (EDIT ONLY THIS)
-   ========================= */
-
-const TEST = {
-id: "LAWTEST01",
-password: "4829",
-duration: 900,
-status: "LIVE"
-};
-
-/* =========================
-   QUESTIONS (PASTE NEW TEST HERE)
-   ========================= */
-
-const QUESTION_BANK = [
-{
-q:"Article 21 relates to?",
-options:["Equality","Right to Life","Freedom","Religion"],
-answer:1
-},
-{
-q:"Who interprets Constitution?",
-options:["President","Supreme Court","PM","Parliament"],
-answer:1
-},
-{
-q:"Indian Constitution adopted in?",
-options:["1947","1948","1949","1950"],
-answer:2
-}
-];
-
-/* =========================
-   SYSTEM
-   ========================= */
-
-let current = 0;
-let answers = [];
-let score = 0;
-let timeLeft = TEST.duration;
-let timer;
-let studentName = "";
-let loginIdGlobal = "";
-
-function attemptId(loginId){
-return TEST.id + "_" + loginId;
-}
-
-async function login(){
-
-if(TEST.status !== "LIVE"){
-alert("Test not live yet");
-return;
-}
-
-const loginId = document.getElementById("loginId").value.trim();
-const password = document.getElementById("password").value.trim();
-
-if(password !== TEST.password){
-alert("Incorrect password");
-return;
-}
-
-const studentDoc = await db.collection("students").doc(loginId).get();
-
-if(!studentDoc.exists){
-alert("Invalid Login ID");
-return;
-}
-
-const student = studentDoc.data();
-
-if(!student.active){
-alert("Access disabled");
-return;
-}
-
-const attemptCheck = await db.collection("attempts")
-.doc(attemptId(loginId))
-.get();
-
-if(attemptCheck.exists){
-alert("You already attempted this test");
-return;
-}
-
-studentName = student.name;
-loginIdGlobal = loginId;
-
-document.getElementById("login").style.display="none";
-document.getElementById("exam").style.display="block";
-
-document.getElementById("time").innerText=timeLeft;
-
-loadQuestion();
-startTimer();
-}
-
-function loadQuestion(){
-let q = QUESTION_BANK[current];
-let html = `<div class="question">${q.q}</div>`;
-
-q.options.forEach((opt,i)=>{
-html += `<div class="option" onclick="selectOption(${i})">${opt}</div>`;
-});
-
-document.getElementById("questionBox").innerHTML = html;
-}
-
-function selectOption(i){
-answers[current] = i;
-}
-
-function nextQuestion(){
-current++;
-if(current >= QUESTION_BANK.length){
-submitTest();
-return;
-}
-loadQuestion();
-}
-
-function startTimer(){
-timer = setInterval(()=>{
-timeLeft--;
-document.getElementById("time").innerText = timeLeft;
-
-if(timeLeft <= 0){
-clearInterval(timer);
-submitTest();
-}
-},1000);
-}
-
-async function submitTest(){
-
-clearInterval(timer);
-
-QUESTION_BANK.forEach((q,i)=>{
-if(answers[i] == q.answer) score++;
-});
-
-await db.collection("attempts")
-.doc(attemptId(loginIdGlobal))
-.set({
-testId: TEST.id,
-loginId: loginIdGlobal,
-name: studentName,
-score: score,
-timeTaken: TEST.duration - timeLeft,
-timestamp: Date.now()
-});
-
-document.getElementById("exam").style.display="none";
-document.getElementById("result").style.display="block";
-
-document.getElementById("studentName").innerText = studentName;
-document.getElementById("score").innerText = score;
-
-loadLeaderboard();
-}
-
-async function loadLeaderboard(){
-
-const snapshot = await db.collection("attempts")
-.where("testId","==",TEST.id)
-.orderBy("score","desc")
-.get();
-
-let html="";
-let rank=1;
-
-snapshot.forEach(doc=>{
-let d = doc.data();
-
-let cls="";
-if(rank==1) cls="rank1";
-if(rank==2) cls="rank2";
-if(rank==3) cls="rank3";
-
-html += `
-<tr class="${cls}">
-<td>${rank}</td>
-<td>${d.name}</td>
-<td>${d.score}</td>
-<td>${d.timeTaken}s</td>
-</tr>
-`;
-
-if(d.loginId === loginIdGlobal){
-document.getElementById("rank").innerText = rank;
-}
-
-rank++;
-});
-
-document.getElementById("leaderboard").innerHTML = html;
-}
-
-loadLeaderboard();
-
-</script>
+<script src="firebase.js"></script>
+<script src="questions.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
