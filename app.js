@@ -1,208 +1,78 @@
-// ================= GLOBAL VARIABLES =================
+// Firebase imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-let studentName = "";
-let studentId = "";
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "lawcompass-9d20f.firebaseapp.com",
+  projectId: "lawcompass-9d20f",
+  storageBucket: "lawcompass-9d20f.appspot.com",
+  messagingSenderId: "267483431074",
+  appId: "1:267483431074:web:571f34b478aaa976e6d7fb"
+};
 
-let currentQuestionIndex = 0;
-let score = 0;
-let userAnswers = [];
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-// ================= LOGIN =================
+// Password protection
+const correctPassword = "lawcompass123";
 
-function loginStudent() {
-  const nameInput = document.getElementById("studentName");
-  const idInput = document.getElementById("studentId");
+const loginBtn = document.getElementById("loginBtn");
+const passwordInput = document.getElementById("passwordInput");
+const loginPage = document.getElementById("loginPage");
+const mainContent = document.getElementById("mainContent");
 
-  studentName = nameInput.value.trim();
-  studentId = idInput.value.trim();
+if (loginBtn) {
+  loginBtn.addEventListener("click", () => {
+    const password = passwordInput.value;
 
-  if (!studentName || !studentId) {
-    alert("Please enter your name and student ID");
-    return;
-  }
-
-  const attemptKey = "attempt_" + studentId;
-
-  if (localStorage.getItem(attemptKey)) {
-    alert("You have already attempted this test.");
-    return;
-  }
-
-  document.getElementById("passwordSection").style.display = "block";
-}
-
-// ================= PASSWORD VERIFICATION =================
-
-async function verifyPassword() {
-  const enteredPassword = document.getElementById("testPassword").value;
-async function verifyPassword() {
-  const enteredPassword = document.getElementById("testPassword").value;
-
-  if (!enteredPassword) {
-    alert("Enter the test password");
-    return;
-  }
-
-  try {
-    const testRef = doc(db, "testSettings", "currentTest");
-    const testSnap = await getDoc(testRef);
-
-    if (!testSnap.exists()) {
-      alert("Test settings not found in database.");
-      return;
-    }
-
-    const data = testSnap.data();
-
-    if (enteredPassword !== data.password) {
+    if (password === correctPassword) {
+      loginPage.style.display = "none";
+      mainContent.style.display = "block";
+      loadLeaderboard();
+    } else {
       alert("Wrong password");
-      return;
-    }
-
-    startTest();
-
-  } catch (error) {
-    console.error("Password error:", error);
-    alert("Something went wrong while verifying the password.");
-  }
-}
-
-// ================= START TEST =================
-
-function startTest() {
-  document.querySelector(".container").style.display = "none";
-  document.getElementById("quizContainer").style.display = "block";
-
-  loadQuestion();
-}
-
-// ================= LOAD QUESTION =================
-
-function loadQuestion() {
-  const questionElement = document.getElementById("question");
-  const optionsContainer = document.getElementById("options");
-
-  optionsContainer.innerHTML = "";
-
-  const currentQuestion = questions[currentQuestionIndex];
-
-  questionElement.textContent =
-    (currentQuestionIndex + 1) + ". " + currentQuestion.question;
-
-  currentQuestion.options.forEach((option, index) => {
-    const button = document.createElement("button");
-    button.classList.add("option-btn");
-    button.textContent = option;
-
-    button.onclick = () => selectAnswer(index);
-
-    optionsContainer.appendChild(button);
-  });
-}
-
-// ================= SELECT ANSWER =================
-
-function selectAnswer(index) {
-  userAnswers[currentQuestionIndex] = index;
-
-  const buttons = document.querySelectorAll(".option-btn");
-
-  buttons.forEach((btn) => {
-    btn.style.background = "white";
-  });
-
-  buttons[index].style.background = "#DBEAFE";
-}
-
-// ================= NEXT QUESTION =================
-
-function nextQuestion() {
-  if (userAnswers[currentQuestionIndex] === undefined) {
-    alert("Please select an answer");
-    return;
-  }
-
-  currentQuestionIndex++;
-
-  if (currentQuestionIndex >= questions.length) {
-    submitTest();
-    return;
-  }
-
-  loadQuestion();
-}
-
-// ================= CALCULATE SCORE =================
-
-function calculateScore() {
-  score = 0;
-
-  questions.forEach((q, index) => {
-    if (userAnswers[index] === q.answer) {
-      score++;
     }
   });
 }
 
-// ================= SUBMIT TEST =================
-
-async function submitTest() {
-  calculateScore();
-
+// Load leaderboard
+async function loadLeaderboard() {
   try {
-    await addDoc(collection(db, "leaderboard"), {
-      name: studentName,
-      studentId: studentId,
-      score: score,
-      total: questions.length,
-      timestamp: new Date()
-    });
+    const leaderboardRef = collection(db, "leaderboard");
 
-    localStorage.setItem("attempt_" + studentId, "true");
-
-    document.getElementById("quizContainer").style.display = "none";
-    document.getElementById("resultContainer").style.display = "block";
-
-  } catch (error) {
-    console.error(error);
-    alert("Error submitting test.");
-  }
-}
-
-// ================= HOMEPAGE LEADERBOARD =================
-
-async function loadTopLeaderboard() {
-  try {
-    const container = document.getElementById("topLeaderboard");
-
-    if (!container) return;
-
-    const q = query(
-      collection(db, "leaderboard"),
-      orderBy("score", "desc"),
-      limit(5)
-    );
-
+    const q = query(leaderboardRef, orderBy("score", "desc"), limit(10));
     const snapshot = await getDocs(q);
 
-    container.innerHTML = "";
+    const leaderboardList = document.getElementById("leaderboard");
 
-    snapshot.forEach((docSnap, index) => {
-      const data = docSnap.data();
+    if (!leaderboardList) return;
 
-      container.innerHTML += `
-        <div class="leaderboard-card">
-          <span>#${index + 1} ${data.name}</span>
-          <span>${data.score}</span>
-        </div>
-      `;
+    leaderboardList.innerHTML = "";
+
+    snapshot.forEach((docItem) => {
+      const data = docItem.data();
+
+      const li = document.createElement("li");
+      li.textContent = `${data.name} - ${data.score}`;
+
+      leaderboardList.appendChild(li);
     });
 
   } catch (error) {
     console.error("Leaderboard preview error:", error);
   }
 }
-
-// ================= RUN LEADERBOARD =================
-
-loadTopLeaderboard();
