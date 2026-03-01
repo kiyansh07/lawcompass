@@ -7,10 +7,7 @@ let currentQuestionIndex = 0;
 let score = 0;
 let userAnswers = [];
 
-// questions come from questions.js
-// make sure questions.js is loaded before this file
-
-// ================= LOGIN SYSTEM =================
+// ================= LOGIN =================
 
 function loginStudent() {
   const nameInput = document.getElementById("studentName");
@@ -24,7 +21,6 @@ function loginStudent() {
     return;
   }
 
-  // Prevent multiple attempts
   const attemptKey = "attempt_" + studentId;
 
   if (localStorage.getItem(attemptKey)) {
@@ -46,15 +42,15 @@ async function verifyPassword() {
   }
 
   try {
-    const docRef = db.collection("testSettings").doc("currentTest");
-    const docSnap = await docRef.get();
+    const testDoc = doc(db, "testSettings", "currentTest");
+    const testSnap = await getDoc(testDoc);
 
-    if (!docSnap.exists) {
-      alert("Test settings not found.");
+    if (!testSnap.exists()) {
+      alert("Test not configured.");
       return;
     }
 
-    const data = docSnap.data();
+    const data = testSnap.data();
 
     if (enteredPassword !== data.password) {
       alert("Incorrect password");
@@ -65,7 +61,7 @@ async function verifyPassword() {
 
   } catch (error) {
     console.error(error);
-    alert("Error verifying password");
+    alert("Error verifying password.");
   }
 }
 
@@ -104,8 +100,8 @@ function loadQuestion() {
 
 // ================= SELECT ANSWER =================
 
-function selectAnswer(selectedIndex) {
-  userAnswers[currentQuestionIndex] = selectedIndex;
+function selectAnswer(index) {
+  userAnswers[currentQuestionIndex] = index;
 
   const buttons = document.querySelectorAll(".option-btn");
 
@@ -113,7 +109,7 @@ function selectAnswer(selectedIndex) {
     btn.style.background = "white";
   });
 
-  buttons[selectedIndex].style.background = "#dbeafe";
+  buttons[index].style.background = "#DBEAFE";
 }
 
 // ================= NEXT QUESTION =================
@@ -134,32 +130,6 @@ function nextQuestion() {
   loadQuestion();
 }
 
-// ================= SUBMIT TEST =================
-
-async function submitTest() {
-  calculateScore();
-
-  try {
-    await db.collection("leaderboard").add({
-      name: studentName,
-      studentId: studentId,
-      score: score,
-      total: questions.length,
-      timestamp: new Date()
-    });
-
-    // Save attempt
-    localStorage.setItem("attempt_" + studentId, "true");
-
-    document.getElementById("quizContainer").style.display = "none";
-    document.getElementById("resultContainer").style.display = "block";
-
-  } catch (error) {
-    console.error(error);
-    alert("Error submitting test.");
-  }
-}
-
 // ================= CALCULATE SCORE =================
 
 function calculateScore() {
@@ -172,7 +142,32 @@ function calculateScore() {
   });
 }
 
-// ================= HOMEPAGE LEADERBOARD PREVIEW =================
+// ================= SUBMIT TEST =================
+
+async function submitTest() {
+  calculateScore();
+
+  try {
+    await addDoc(collection(db, "leaderboard"), {
+      name: studentName,
+      studentId: studentId,
+      score: score,
+      total: questions.length,
+      timestamp: new Date()
+    });
+
+    localStorage.setItem("attempt_" + studentId, "true");
+
+    document.getElementById("quizContainer").style.display = "none";
+    document.getElementById("resultContainer").style.display = "block";
+
+  } catch (error) {
+    console.error(error);
+    alert("Error submitting test.");
+  }
+}
+
+// ================= HOMEPAGE LEADERBOARD =================
 
 async function loadTopLeaderboard() {
   try {
@@ -180,16 +175,18 @@ async function loadTopLeaderboard() {
 
     if (!container) return;
 
-    const snapshot = await db
-      .collection("leaderboard")
-      .orderBy("score", "desc")
-      .limit(5)
-      .get();
+    const q = query(
+      collection(db, "leaderboard"),
+      orderBy("score", "desc"),
+      limit(5)
+    );
+
+    const snapshot = await getDocs(q);
 
     container.innerHTML = "";
 
-    snapshot.forEach((doc, index) => {
-      const data = doc.data();
+    snapshot.forEach((docSnap, index) => {
+      const data = docSnap.data();
 
       container.innerHTML += `
         <div class="leaderboard-card">
@@ -200,9 +197,10 @@ async function loadTopLeaderboard() {
     });
 
   } catch (error) {
-    console.log("Leaderboard preview error:", error);
+    console.error("Leaderboard preview error:", error);
   }
 }
 
-// Run leaderboard preview
+// ================= RUN LEADERBOARD =================
+
 loadTopLeaderboard();
