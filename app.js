@@ -15,10 +15,10 @@ import {
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyD_hDnbO9eAkl_uIbh7RlqyW8GwzrHFAv4",
   authDomain: "lawcompass-9d20f.firebaseapp.com",
   projectId: "lawcompass-9d20f",
-  storageBucket: "lawcompass-9d20f.appspot.com",
+  storageBucket: "lawcompass-9d20f.firebasestorage.app",
   messagingSenderId: "267483431074",
   appId: "1:267483431074:web:571f34b478aaa976e6d7fb"
 };
