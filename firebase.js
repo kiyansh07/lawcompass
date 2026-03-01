@@ -1,15 +1,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-getFirestore, 
-doc, 
-getDoc, 
-setDoc, 
-updateDoc, 
-collection, 
-getDocs, 
-query, 
-orderBy, 
-limit 
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  addDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -21,10 +22,10 @@ const firebaseConfig = {
   appId: "1:267483431074:web:571f34b478aaa976e6d7fb"
 };
 
-
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* expose everything globally */
 window.db = db;
 window.doc = doc;
 window.getDoc = getDoc;
@@ -35,3 +36,4 @@ window.getDocs = getDocs;
 window.query = query;
 window.orderBy = orderBy;
 window.limit = limit;
+window.addDoc = addDoc;
