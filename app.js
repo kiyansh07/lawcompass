@@ -76,3 +76,7 @@ async function loadLeaderboard() {
     console.error("Leaderboard preview error:", error);
   }
 }
+window.loginStudent = loginStudent;
+window.startTest = startTest;
+window.submitTest = submitTest;
+window.showLeaderboard = showLeaderboard;
