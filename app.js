@@ -299,3 +299,29 @@ let d = arr[index];
 document.getElementById("searchResult").innerText =
 `Rank: ${index+1} | ${d.name} | Score: ${d.score}`;
 }
+async function loadTopLeaderboard(){
+const snapshot = await db
+.collection("leaderboard")
+.orderBy("score","desc")
+.limit(5)
+.get();
+
+const container = document.getElementById("topLeaderboard");
+
+if(!container) return;
+
+container.innerHTML="";
+
+snapshot.forEach((doc,index)=>{
+const data = doc.data();
+
+container.innerHTML += `
+<div class="leaderboard-card">
+<span>#${index+1} ${data.name}</span>
+<span>${data.score}</span>
+</div>
+`;
+});
+}
+
+loadTopLeaderboard();
