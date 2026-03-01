@@ -2,72 +2,103 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>LawCompass</title>
+<title>LawCompass Exam Portal</title>
 <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
-<h1>LawCompass</h1>
+<div class="logo">LawCompass</div>
+<div id="testName"></div>
+<div id="timer"></div>
 </header>
 
 <!-- LOGIN -->
-<section id="loginPage">
+<section id="loginPage" class="page active">
+<div class="card login-card">
 <h2>Student Login</h2>
-<input type="text" id="name" placeholder="Full Name">
-<input type="text" id="studentId" placeholder="Student ID">
-<button onclick="login()">Continue</button>
+<input id="name" placeholder="Full Name">
+<input id="studentId" placeholder="Student ID">
+<button onclick="login()">Enter Portal</button>
+</div>
 </section>
 
 <!-- INSTRUCTIONS -->
-<section id="instructionsPage" class="hidden">
-<h2>Test Instructions</h2>
+<section id="instructionsPage" class="page">
+<div class="card">
+<h2>Exam Instructions</h2>
 <ul>
-<li>Attempt only once</li>
-<li>50 students max</li>
-<li>Timer will auto submit</li>
+<li>Test can be attempted only once</li>
+<li>Maximum 50 students allowed</li>
+<li>Timer will auto-submit test</li>
+<li>Do not refresh during exam</li>
 </ul>
 <button onclick="goToPassword()">Proceed</button>
+</div>
 </section>
 
 <!-- PASSWORD -->
-<section id="passwordPage" class="hidden">
+<section id="passwordPage" class="page">
+<div class="card">
 <h2>Enter Test Password</h2>
-<input type="password" id="testPassword" placeholder="4 digit password">
+<input id="testPassword" placeholder="Password">
 <button onclick="verifyPassword()">Start Test</button>
+</div>
 </section>
 
 <!-- EXAM -->
-<section id="examPage" class="hidden">
-<div id="timer"></div>
+<section id="examPage" class="page container">
 
+<div class="exam-grid">
+
+<div class="card question-panel">
 <div id="questionContainer"></div>
 
-<div id="navigator"></div>
-
+<div class="nav-buttons">
 <button onclick="prevQuestion()">Previous</button>
 <button onclick="nextQuestion()">Next</button>
-<button onclick="submitTest()">Submit Test</button>
+<button class="submit-btn" onclick="submitTest()">Submit</button>
+</div>
+
+</div>
+
+<div class="card navigator-panel">
+<h3>Questions</h3>
+<div id="navigator"></div>
+</div>
+
+</div>
+
 </section>
 
-<!-- RESULT -->
-<section id="resultPage" class="hidden">
-<h2>Your Result</h2>
+<!-- RESULT DASHBOARD -->
+<section id="resultPage" class="page">
+<div class="card result-card">
+<h2>Test Completed</h2>
 <div id="scoreDisplay"></div>
 <div id="rankDisplay"></div>
+<div id="badge"></div>
 <button onclick="loadLeaderboard()">View Leaderboard</button>
+</div>
 </section>
 
 <!-- LEADERBOARD -->
-<section id="leaderboardPage" class="hidden">
+<section id="leaderboardPage" class="page container">
+<div class="card leaderboard-card">
+
 <h2>Leaderboard</h2>
+
 <div id="top10"></div>
 
-<input type="text" id="searchBox" placeholder="Search name or ID">
+<div class="search-area">
+<input id="searchBox" placeholder="Search your name or ID">
 <button onclick="searchRank()">Search</button>
+</div>
 
 <div id="searchResult"></div>
+
+</div>
 </section>
 
 <script src="firebase.js"></script>
