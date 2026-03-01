@@ -79,4 +79,26 @@ async function loadLeaderboard() {
 window.loginStudent = loginStudent;
 window.startTest = startTest;
 window.submitTest = submitTest;
-window.showLeaderboard = showLeaderboard;
+window.shfunction loginStudent() {
+  const name = document.getElementById("studentName").value;
+  const studentId = document.getElementById("studentId").value;
+  const password = document.getElementById("testPassword").value;
+
+  const correctPassword = "1234";
+
+  if (!name || !studentId || !password) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  if (password !== correctPassword) {
+    alert("Incorrect test password");
+    return;
+  }
+
+  localStorage.setItem("lc_name", name);
+  localStorage.setItem("lc_id", studentId);
+
+  document.getElementById("loginSection").style.display = "none";
+  document.getElementById("dashboardSection").style.display = "block";
+}owLeaderboard = showLeaderboard;
