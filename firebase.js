@@ -1,11 +1,12 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// Your Firebase config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
+  apiKey: "AIzaSyD_hDnbO9eAkl_uIbh7RlqyW8GwzrHFAv4",
   authDomain: "lawcompass-9d20f.firebaseapp.com",
   projectId: "lawcompass-9d20f",
-  storageBucket: "lawcompass-9d20f.appspot.com",
+  storageBucket: "lawcompass-9d20f.firebasestorage.app",
   messagingSenderId: "267483431074",
   appId: "1:267483431074:web:571f34b478aaa976e6d7fb"
 };
@@ -13,5 +14,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export { db };
-
+window.db = db;
