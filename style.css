@@ -1,4 +1,17 @@
+:root{
+--primary:#2563EB;
+--accent:#22C55E;
+--highlight:#F59E0B;
+--bg:#F1F5F9;
+--text:#0F172A;
+--card:#ffffff;
+}
+
 body{
+background:var(--bg);
+color:var(--text);
+font-family: "Segoe UI", system-ui, sans-serif;
+}body{
 margin:0;
 font-family:Segoe UI;
 background:#0a0a0a;
