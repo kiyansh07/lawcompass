@@ -15,3 +15,12 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 window.db = db;
+window.doc = doc;
+window.getDoc = getDoc;
+window.setDoc = setDoc;
+window.updateDoc = updateDoc;
+window.collection = collection;
+window.getDocs = getDocs;
+window.query = query;
+window.orderBy = orderBy;
+window.limit = limit;
