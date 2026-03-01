@@ -35,33 +35,35 @@ function loginStudent() {
 
 async function verifyPassword() {
   const enteredPassword = document.getElementById("testPassword").value;
+async function verifyPassword() {
+  const enteredPassword = document.getElementById("testPassword").value;
 
   if (!enteredPassword) {
-    alert("Enter test password");
+    alert("Enter the test password");
     return;
   }
 
   try {
-    const testDoc = doc(db, "testSettings", "currentTest");
-    const testSnap = await getDoc(testDoc);
+    const testRef = doc(db, "testSettings", "currentTest");
+    const testSnap = await getDoc(testRef);
 
     if (!testSnap.exists()) {
-      alert("Test not configured.");
+      alert("Test settings not found in database.");
       return;
     }
 
     const data = testSnap.data();
 
     if (enteredPassword !== data.password) {
-      alert("Incorrect password");
+      alert("Wrong password");
       return;
     }
 
     startTest();
 
   } catch (error) {
-    console.error(error);
-    alert("Error verifying password.");
+    console.error("Password error:", error);
+    alert("Something went wrong while verifying the password.");
   }
 }
 
