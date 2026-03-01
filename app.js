@@ -1,327 +1,208 @@
-let currentUser = null;
-let currentQuestion = 0;
-let answers = [];
-let timerInterval;
-let startTime;
+// ================= GLOBAL VARIABLES =================
 
-/* PAGE NAVIGATION (Animated transitions) */
-function show(page){
-document.querySelectorAll(".page").forEach(p=>{
-p.classList.remove("active");
-});
-document.getElementById(page).classList.add("active");
-}
+let studentName = "";
+let studentId = "";
 
-/* LOGIN */
-function login(){
-let name = document.getElementById("name").value.trim();
-let id = document.getElementById("studentId").value.trim();
-
-if(!name || !id){
-alert("Enter Name and Student ID");
-return;
-}
-
-currentUser = { name, id };
-show("instructionsPage");
-}
-
-/* INSTRUCTIONS → PASSWORD */
-function goToPassword(){
-show("passwordPage");
-}
-
-/* PASSWORD CHECK + STUDENT LIMIT */
-async function verifyPassword(){
-
-let entered = document.getElementById("testPassword").value;
-
-let ref = doc(db,"testSettings","currentTest");
-let snap = await getDoc(ref);
-let data = snap.data();
-
-if(entered !== data.testPassword){
-alert("Wrong password");
-return;
-}
-
-if(data.activeStudents >= data.maxStudents){
-alert("Test capacity reached");
-return;
-}
-
-await updateDoc(ref,{
-activeStudents: data.activeStudents + 1
-});
-
-startExam();
-}
-
-/* START EXAM */
-function startExam(){
-show("examPage");
-
-document.getElementById("testName").innerText = testConfig.testName;
-
-createNavigator();
-loadQuestion();
-startTimer();
-
-startTime = new Date();
-}
-
-/* LOAD QUESTION */
-function loadQuestion(){
-
-let q = questions[currentQuestion];
-
-let html = `<h3>Q${currentQuestion+1}. ${q.question}</h3>`;
-
-q.options.forEach((opt,i)=>{
-html += `
-<div class="option">
-<input type="radio"
-${answers[currentQuestion] === i ? "checked":""}
-onclick="saveAnswer(${i})">
-${opt}
-</div>
-`;
-});
-
-document.getElementById("questionContainer").innerHTML = html;
-
-highlightCurrent();
-}
-
-/* SAVE ANSWER */
-function saveAnswer(i){
-answers[currentQuestion] = i;
-
-let buttons = document.querySelectorAll("#navigator button");
-buttons[currentQuestion].classList.add("answered");
-}
-
-/* NAVIGATION */
-function nextQuestion(){
-if(currentQuestion < questions.length - 1){
-currentQuestion++;
-loadQuestion();
-}
-}
-
-function prevQuestion(){
-if(currentQuestion > 0){
-currentQuestion--;
-loadQuestion();
-}
-}
-
-function jump(i){
-currentQuestion = i;
-loadQuestion();
-}
-
-/* QUESTION NAVIGATOR */
-function createNavigator(){
-
-let nav = "";
-
-for(let i=0;i<questions.length;i++){
-nav += `<button onclick="jump(${i})">${i+1}</button>`;
-}
-
-document.getElementById("navigator").innerHTML = nav;
-}
-
-/* CURRENT QUESTION HIGHLIGHT */
-function highlightCurrent(){
-let buttons = document.querySelectorAll("#navigator button");
-
-buttons.forEach(b=>b.classList.remove("current"));
-buttons[currentQuestion].classList.add("current");
-}
-
-/* TIMER */
-function startTimer(){
-
-let time = testConfig.durationMinutes * 60;
-
-timerInterval = setInterval(()=>{
-
-time--;
-
-let min = Math.floor(time / 60);
-let sec = time % 60;
-
-document.getElementById("timer").innerText =
-`${min}:${sec < 10 ? "0"+sec : sec}`;
-
-if(time <= 0){
-clearInterval(timerInterval);
-submitTest();
-}
-
-},1000);
-}
-
-/* SUBMIT TEST */
-async function submitTest(){
-
-clearInterval(timerInterval);
-
+let currentQuestionIndex = 0;
 let score = 0;
+let userAnswers = [];
 
-questions.forEach((q,i)=>{
-if(answers[i] === q.answer) score++;
-});
+// questions come from questions.js
+// make sure questions.js is loaded before this file
 
-let submitTime = new Date();
+// ================= LOGIN SYSTEM =================
 
-/* SAVE RESULT */
-await setDoc(doc(db,"leaderboard",currentUser.id),{
-name: currentUser.name,
-score: score,
-submittedAt: submitTime
-});
+function loginStudent() {
+  const nameInput = document.getElementById("studentName");
+  const idInput = document.getElementById("studentId");
 
-document.getElementById("scoreDisplay").innerText =
-`Score: ${score} / ${questions.length}`;
+  studentName = nameInput.value.trim();
+  studentId = idInput.value.trim();
 
-show("resultPage");
+  if (!studentName || !studentId) {
+    alert("Please enter your name and student ID");
+    return;
+  }
 
-calculateRank();
+  // Prevent multiple attempts
+  const attemptKey = "attempt_" + studentId;
+
+  if (localStorage.getItem(attemptKey)) {
+    alert("You have already attempted this test.");
+    return;
+  }
+
+  document.getElementById("passwordSection").style.display = "block";
 }
 
-/* RANK BADGES */
-function showBadge(rank){
+// ================= PASSWORD VERIFICATION =================
 
-let badge = "";
+async function verifyPassword() {
+  const enteredPassword = document.getElementById("testPassword").value;
 
-if(rank === 1) badge = "🏆 Champion";
-else if(rank <= 3) badge = "🥇 Top Performer";
-else if(rank <= 10) badge = "⭐ Elite Ranker";
-else badge = "📘 Participant";
+  if (!enteredPassword) {
+    alert("Enter test password");
+    return;
+  }
 
-document.getElementById("badge").innerText = badge;
+  try {
+    const docRef = db.collection("testSettings").doc("currentTest");
+    const docSnap = await docRef.get();
+
+    if (!docSnap.exists) {
+      alert("Test settings not found.");
+      return;
+    }
+
+    const data = docSnap.data();
+
+    if (enteredPassword !== data.password) {
+      alert("Incorrect password");
+      return;
+    }
+
+    startTest();
+
+  } catch (error) {
+    console.error(error);
+    alert("Error verifying password");
+  }
 }
 
-/* CALCULATE RANK */
-async function calculateRank(){
+// ================= START TEST =================
 
-let snap = await getDocs(collection(db,"leaderboard"));
+function startTest() {
+  document.querySelector(".container").style.display = "none";
+  document.getElementById("quizContainer").style.display = "block";
 
-let arr = [];
-
-snap.forEach(doc=>{
-arr.push(doc.data());
-});
-
-arr.sort((a,b)=>{
-if(b.score !== a.score) return b.score - a.score;
-return new Date(a.submittedAt) - new Date(b.submittedAt);
-});
-
-let rank = arr.findIndex(x=>x.name === currentUser.name) + 1;
-
-document.getElementById("rankDisplay").innerText =
-`Your Rank: ${rank}`;
-
-showBadge(rank);
+  loadQuestion();
 }
 
-/* LOAD LEADERBOARD */
-async function loadLeaderboard(){
+// ================= LOAD QUESTION =================
 
-show("leaderboardPage");
+function loadQuestion() {
+  const questionElement = document.getElementById("question");
+  const optionsContainer = document.getElementById("options");
 
-let q = query(
-collection(db,"leaderboard"),
-orderBy("score","desc"),
-orderBy("submittedAt","asc"),
-limit(10)
-);
+  optionsContainer.innerHTML = "";
 
-let snap = await getDocs(q);
+  const currentQuestion = questions[currentQuestionIndex];
 
-let html = "";
-let r = 1;
+  questionElement.textContent =
+    (currentQuestionIndex + 1) + ". " + currentQuestion.question;
 
-snap.forEach(doc=>{
+  currentQuestion.options.forEach((option, index) => {
+    const button = document.createElement("button");
+    button.classList.add("option-btn");
+    button.textContent = option;
 
-let d = doc.data();
+    button.onclick = () => selectAnswer(index);
 
-let rankClass = "";
-if(r === 1) rankClass = "rank1";
-if(r === 2) rankClass = "rank2";
-if(r === 3) rankClass = "rank3";
-
-html += `
-<p class="${rankClass}">
-#${r} ${d.name} — ${d.score}
-</p>
-`;
-
-r++;
-});
-
-document.getElementById("top10").innerHTML = html;
+    optionsContainer.appendChild(button);
+  });
 }
 
-/* SEARCH RANK */
-async function searchRank(){
+// ================= SELECT ANSWER =================
 
-let term = document.getElementById("searchBox").value.toLowerCase();
+function selectAnswer(selectedIndex) {
+  userAnswers[currentQuestionIndex] = selectedIndex;
 
-let snap = await getDocs(collection(db,"leaderboard"));
+  const buttons = document.querySelectorAll(".option-btn");
 
-let arr = [];
+  buttons.forEach((btn) => {
+    btn.style.background = "white";
+  });
 
-snap.forEach(doc=>{
-arr.push(doc.data());
-});
-
-arr.sort((a,b)=>{
-if(b.score !== a.score) return b.score - a.score;
-return new Date(a.submittedAt) - new Date(b.submittedAt);
-});
-
-let index = arr.findIndex(x =>
-x.name.toLowerCase().includes(term)
-);
-
-if(index === -1){
-document.getElementById("searchResult").innerText = "Not found";
-return;
+  buttons[selectedIndex].style.background = "#dbeafe";
 }
 
-let d = arr[index];
+// ================= NEXT QUESTION =================
 
-document.getElementById("searchResult").innerText =
-`Rank: ${index+1} | ${d.name} | Score: ${d.score}`;
-}
-async function loadTopLeaderboard(){
-const snapshot = await db
-.collection("leaderboard")
-.orderBy("score","desc")
-.limit(5)
-.get();
+function nextQuestion() {
+  if (userAnswers[currentQuestionIndex] === undefined) {
+    alert("Please select an answer");
+    return;
+  }
 
-const container = document.getElementById("topLeaderboard");
+  currentQuestionIndex++;
 
-if(!container) return;
+  if (currentQuestionIndex >= questions.length) {
+    submitTest();
+    return;
+  }
 
-container.innerHTML="";
-
-snapshot.forEach((doc,index)=>{
-const data = doc.data();
-
-container.innerHTML += `
-<div class="leaderboard-card">
-<span>#${index+1} ${data.name}</span>
-<span>${data.score}</span>
-</div>
-`;
-});
+  loadQuestion();
 }
 
+// ================= SUBMIT TEST =================
+
+async function submitTest() {
+  calculateScore();
+
+  try {
+    await db.collection("leaderboard").add({
+      name: studentName,
+      studentId: studentId,
+      score: score,
+      total: questions.length,
+      timestamp: new Date()
+    });
+
+    // Save attempt
+    localStorage.setItem("attempt_" + studentId, "true");
+
+    document.getElementById("quizContainer").style.display = "none";
+    document.getElementById("resultContainer").style.display = "block";
+
+  } catch (error) {
+    console.error(error);
+    alert("Error submitting test.");
+  }
+}
+
+// ================= CALCULATE SCORE =================
+
+function calculateScore() {
+  score = 0;
+
+  questions.forEach((q, index) => {
+    if (userAnswers[index] === q.answer) {
+      score++;
+    }
+  });
+}
+
+// ================= HOMEPAGE LEADERBOARD PREVIEW =================
+
+async function loadTopLeaderboard() {
+  try {
+    const container = document.getElementById("topLeaderboard");
+
+    if (!container) return;
+
+    const snapshot = await db
+      .collection("leaderboard")
+      .orderBy("score", "desc")
+      .limit(5)
+      .get();
+
+    container.innerHTML = "";
+
+    snapshot.forEach((doc, index) => {
+      const data = doc.data();
+
+      container.innerHTML += `
+        <div class="leaderboard-card">
+          <span>#${index + 1} ${data.name}</span>
+          <span>${data.score}</span>
+        </div>
+      `;
+    });
+
+  } catch (error) {
+    console.log("Leaderboard preview error:", error);
+  }
+}
+
+// Run leaderboard preview
 loadTopLeaderboard();
