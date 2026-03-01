@@ -1,39 +1,149 @@
 body{
-font-family: Arial;
-background:#0f0f0f;
+margin:0;
+font-family:Segoe UI;
+background:#0a0a0a;
 color:white;
-text-align:center;
 }
 
 header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 30px;
 background:#111;
-padding:20px;
-color:gold;
-font-size:28px;
+border-bottom:2px solid gold;
 }
 
-section{
-margin-top:40px;
+.logo{
+font-size:22px;
+color:gold;
+font-weight:bold;
+}
+
+.page{
+display:none;
+animation:fade 0.5s ease;
+}
+
+.page.active{
+display:block;
+}
+
+@keyframes fade{
+from{opacity:0; transform:translateY(10px);}
+to{opacity:1; transform:translateY(0);}
+}
+
+.container{
+width:92%;
+margin:auto;
+margin-top:30px;
+}
+
+.card{
+background:#151515;
+padding:25px;
+border-radius:10px;
+box-shadow:0 8px 25px rgba(0,0,0,0.6);
+}
+
+.login-card{
+width:350px;
+margin:auto;
+margin-top:100px;
+text-align:center;
 }
 
 input{
-padding:10px;
-margin:10px;
-width:220px;
+padding:12px;
+margin:10px 0;
+width:100%;
+border:none;
+border-radius:6px;
 }
 
 button{
-padding:10px 20px;
+padding:12px 20px;
 background:gold;
 border:none;
+border-radius:6px;
+font-weight:bold;
 cursor:pointer;
 }
 
-.hidden{
-display:none;
+.exam-grid{
+display:grid;
+grid-template-columns: 2fr 1fr;
+gap:20px;
+}
+
+.question-panel{
+min-height:350px;
+}
+
+.navigator-panel{
+height:420px;
+overflow:auto;
+}
+
+#navigator{
+display:grid;
+grid-template-columns: repeat(5,1fr);
+gap:8px;
 }
 
 #navigator button{
-margin:4px;
-width:35px;
+background:#222;
+color:white;
 }
+
+#navigator button.answered{
+background:#2ecc71;
+}
+
+#navigator button.current{
+border:2px solid gold;
+}
+
+.nav-buttons{
+margin-top:20px;
+display:flex;
+gap:10px;
+}
+
+.submit-btn{
+background:#e74c3c;
+color:white;
+}
+
+#timer{
+font-size:20px;
+color:gold;
+font-weight:bold;
+}
+
+.result-card{
+text-align:center;
+max-width:400px;
+margin:auto;
+margin-top:120px;
+}
+
+#badge{
+margin-top:20px;
+font-size:22px;
+}
+
+.leaderboard-card{
+max-width:700px;
+margin:auto;
+}
+
+#top10 p{
+padding:10px;
+border-bottom:1px solid #333;
+}
+
+.rank1{color:gold;}
+.rank2{color:silver;}
+.rank3{color:#cd7f32;}
